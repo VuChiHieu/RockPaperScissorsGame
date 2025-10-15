@@ -1,29 +1,29 @@
-### IntelliJ IDEA ###
+# ======================================
+# IntelliJ IDEA
+# ======================================
+.idea/
+*.iml
+
+# ======================================
+# Build outputs
+# ======================================
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# ======================================
+# Local database or config files
+# ======================================
+user.db
 
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# ======================================
+# OS and editor files
+# ======================================
 .DS_Store
+.vscode/
+Thumbs.db
+
+# ======================================
+# Logs & temporary files
+# ======================================
+*.log
+*.tmp
