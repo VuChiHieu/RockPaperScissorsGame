@@ -111,7 +111,6 @@ public class ClientApplication extends Application {
             showAlert("Lỗi", "Không thể kết nối đến server");
         }
     }
-<<<<<<< HEAD
 
     /** ---------------- XỬ LÝ TIN NHẮN TỪ SERVER ---------------- */
     private void handleServerMessage(String message) {
