@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Database {
-    private static final String DB_URL = "jdbc:sqlite:D:/Java/RockPaperScissorsGame/user.db";
+    private static final String DB_URL = "jdbc:sqlite:D:/Lap Trinh Mang/Giua ki/Nhom2-RockPaperScissors/RockPaperScissorsGame/user.db";
 
     // KHỞI TẠO DATABASE
     public static void init() {
@@ -42,7 +42,7 @@ public class Database {
                         )
                     """);
 
-            System.out.println("[DB] Database initialized ✅");
+            System.out.println("[DB] Database initialized");
         } catch (SQLException e) {
             System.err.println("[DB] Error initializing DB: " + e.getMessage());
         }

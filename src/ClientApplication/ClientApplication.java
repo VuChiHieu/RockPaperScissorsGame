@@ -281,14 +281,14 @@ public class ClientApplication extends Application {
         joinRoomBtn = new Button("Tham Gia Phòng");
         joinRoomBtn.setOnAction(e -> showRoomDialog(true));
 
+        Button listRoomsBtn = new Button("Danh sách phòng");
+        listRoomsBtn.setOnAction(e -> out.println("LIST_ROOMS|"));
+
         Button leaderboardBtn = new Button("Bảng Xếp Hạng");
         leaderboardBtn.setOnAction(e -> out.println("LEADERBOARD|"));
 
         Button statsBtn = new Button("Thống Kê");
         statsBtn.setOnAction(e -> out.println("GET_STATS|"));
-
-        Button listRoomsBtn = new Button("Danh sách phòng");
-        listRoomsBtn.setOnAction(e -> out.println("LIST_ROOMS|"));
 
         Button quitRoomBtn = new Button("Rời Phòng");
         quitRoomBtn.setOnAction(e -> {
@@ -297,7 +297,7 @@ public class ClientApplication extends Application {
             currentRoom = null;
         });
 
-        bottomPane.getChildren().addAll(createRoomBtn, joinRoomBtn, leaderboardBtn, statsBtn, listRoomsBtn, quitRoomBtn);
+        bottomPane.getChildren().addAll(createRoomBtn, joinRoomBtn, listRoomsBtn, leaderboardBtn, statsBtn, quitRoomBtn);
         mainPane.setBottom(bottomPane);
 
         Scene scene = new Scene(mainPane, 900, 600);
