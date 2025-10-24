@@ -6,8 +6,18 @@ import java.util.*;
 
 public class Server {
     public static final int PORT = 5000;
+    public static final Map<String, ClientHandler> clients = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, User> playerStats = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, GameRoom> gameRooms = Collections.synchronizedMap(new HashMap<>());
+    private static int roomCounter = 0;
 
     public static void main(String[] args) {
+        Database.init();
+
+        // Load all users vào bộ nhớ
+        for (User u : Database.loadAllUsers()) {
+            playerStats.put(u.username, u);
+        }
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("[SERVER] Server đang chạy trên cổng " + PORT);
@@ -234,5 +244,111 @@ public class Server {
         }
     }
 
-    public static class GameRoom {}
+    // ==============================
+    //         GAME ROOM CLASS
+    // ==============================
+    public static class GameRoom {
+        public final String roomId;
+        public final int bo;
+        public final String player1;
+        public String player2;
+        public ClientHandler handler1;
+        public ClientHandler handler2;
+
+        private String move1, move2;
+        private int wins1 = 0, wins2 = 0;
+
+        public GameRoom(String roomId, String player1, int bo, ClientHandler creatorHandler) {
+            this.roomId = roomId;
+            this.player1 = player1;
+            this.bo = bo;
+            this.handler1 = creatorHandler;
+        }
+
+        public boolean addPlayer(String username, ClientHandler handler) {
+            if (player2 == null && !username.equals(player1)) {
+                this.player2 = username;
+                this.handler2 = handler;
+                return true;
+            }
+            return false;
+        }
+
+        public int playerCount() {
+            int c = 0;
+            if (player1 != null) c++;
+            if (player2 != null) c++;
+            return c;
+        }
+
+        public void playerMove(String username, String move) {
+            if (username.equals(player1)) move1 = move;
+            else if (username.equals(player2)) move2 = move;
+
+            if (move1 != null && move2 != null) processRound();
+        }
+
+        private void processRound() {
+            String winner = getRoundWinner();
+            if (!"HÒA".equals(winner)) {
+                if (winner.equals(player1)) wins1++;
+                else wins2++;
+            }
+            notifyPlayers("ROUND_RESULT|" + move1 + "|" + move2 + "|" + winner + "|" + wins1 + "|" + wins2);
+
+            if (wins1 > bo / 2 || wins2 > bo / 2) endGame();
+
+            move1 = move2 = null;
+        }
+
+        private String getRoundWinner() {
+            if (move1 == null || move2 == null) return "HÒA";
+            if (move1.equals(move2)) return "HÒA";
+            if ((move1.equals("KÉO") && move2.equals("BAO")) ||
+                    (move1.equals("BÚA") && move2.equals("KÉO")) ||
+                    (move1.equals("BAO") && move2.equals("BÚA"))) {
+                return player1;
+            }
+            return player2;
+        }
+
+        private void endGame() {
+            String winner = wins1 > wins2 ? player1 : player2;
+            String loser = winner.equals(player1) ? player2 : player1;
+
+            User uWinner = playerStats.getOrDefault(winner, new User(winner, 1000, 0, 0));
+            User uLoser = playerStats.getOrDefault(loser, new User(loser, 1000, 0, 0));
+
+            int K = 32;
+            double expectedW = expectedScore(uWinner.elo, uLoser.elo);
+            double expectedL = expectedScore(uLoser.elo, uWinner.elo);
+            int deltaW = (int) Math.round(K * (1 - expectedW));
+            int deltaL = (int) Math.round(K * (0 - expectedL));
+
+            uWinner.wins++;
+            uWinner.elo = Math.max(0, uWinner.elo + deltaW);
+
+            uLoser.losses++;
+            uLoser.elo = Math.max(0, uLoser.elo + deltaL);
+
+            playerStats.put(uWinner.username, uWinner);
+            playerStats.put(uLoser.username, uLoser);
+
+            Database.updateUser(uWinner);
+            Database.updateUser(uLoser);
+            Database.recordMatch(player1, player2, winner, loser, bo, wins1, wins2);
+
+            notifyPlayers("GAME_END|" + winner + "|" + loser + "|" + wins1 + "|" + wins2);
+            gameRooms.remove(roomId);
+        }
+
+        private double expectedScore(int a, int b) {
+            return 1.0 / (1.0 + Math.pow(10.0, (b - a) / 400.0));
+        }
+
+        public void notifyPlayers(String msg) {
+            if (handler1 != null) handler1.sendMessage(msg);
+            if (handler2 != null) handler2.sendMessage(msg);
+        }
+    }
 }
